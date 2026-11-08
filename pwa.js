@@ -56,7 +56,7 @@ async function importBackup(file, setMsg) {
     const z = zip.file(`files/${b.id}.${ext}`); if (!z) continue;
     const blob = new Blob([await z.async('arraybuffer')], { type: ext === 'pdf' ? 'application/pdf' : 'application/epub+zip' });
     const cz = zip.file('covers/' + b.id); if (cz) b.cover = new Blob([await cz.async('arraybuffer')], { type: b.coverType || 'image/jpeg' }); delete b.coverType;
-    b.hasReflow = false; b.reflowV = undefined; b.reflowTried2 = false; // teks hasil ekstrak PDF dibuat ulang saat dibuka
+    b.hasReflow = false; b.reflowV = undefined; b.reflowTried3 = false; // teks hasil ekstrak PDF dibuat ulang saat dibuka
     await DB.add(b, blob); added++;
   }
   for (const [d, s] of Object.entries(data.stats || {})) stats[d] = Math.max(stats[d] || 0, s);

@@ -1,6 +1,6 @@
-const V = 'tamat-pwa-v3';
+const V = 'tamat-pwa-v4';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'pwa.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'us.jpg',
-  'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'vendor/jszip.min.js',
+  'vendor/pdf.min.js', 'vendor/pdf.worker.min.js', 'vendor/jszip.min.js', 'vendor/en-freq.txt',
   'vendor/fonts/Bookerly-Regular.ttf', 'vendor/fonts/Bookerly-RegularItalic.ttf', 'vendor/fonts/Bookerly-Bold.ttf', 'vendor/fonts/Bookerly-BoldItalic.ttf',
   'vendor/fonts/literata-latin-wght-normal.woff2', 'vendor/fonts/literata-latin-wght-italic.woff2'];
 

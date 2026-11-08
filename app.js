@@ -361,7 +361,49 @@ async function pageFigures(pg, vp, textWords) {
     return { ...b, url: o.toDataURL('image/jpeg', .82) };
   });
 }
+/* Ligatur (fi, fl, ff, ffi, ffl) di banyak PDF diekstrak pdf.js sebagai karakter kosong (\u0000). Pulihkan lewat daftar kata Inggris. */
+let FREQ = null;
+async function loadFreq() {
+  if (FREQ) return FREQ; FREQ = new Map();
+  try { (await (await fetch('vendor/en-freq.txt')).text()).split('\n').forEach((w, i) => { w = w.trim(); if (w) FREQ.set(w, i + 1); }); } catch (e) { console.warn('freq', e); }
+  return FREQ;
+}
+const LIGS = ['fi', 'fl', 'ff', 'ffi', 'ffl'];
+// model huruf (trigram) dari daftar kata: dipakai bila kata tidak ada di daftar (nama, kata langka, mis. "fluffy")
+let TRI = null, BI = null;
+function buildLM() {
+  TRI = new Map(); BI = new Map();
+  for (const w of FREQ.keys()) { const s = '^^' + w + '$'; for (let i = 2; i < s.length; i++) { const b = s.slice(i - 2, i), t = s.slice(i - 2, i + 1); TRI.set(t, (TRI.get(t) || 0) + 1); BI.set(b, (BI.get(b) || 0) + 1); } }
+}
+function lmScore(w) {
+  if (!TRI) buildLM();
+  const s = '^^' + w.toLowerCase() + '$'; let sc = 0;
+  for (let i = 2; i < s.length; i++) sc += Math.log(((TRI.get(s.slice(i - 2, i + 1)) || 0) + .1) / ((BI.get(s.slice(i - 2, i)) || 0) + 2.7));
+  return sc;
+}
+function wordRank(w) {
+  w = w.toLowerCase().replace(/^['’-]+|['’-]+$/g, ''); if (FREQ.has(w)) return FREQ.get(w);
+  for (const suf of ['s', 'es', 'ed', 'd', 'ing', 'ly', 'er', 'ers', "'s", '’s']) if (w.length > suf.length + 2 && w.endsWith(suf) && FREQ.has(w.slice(0, -suf.length))) return FREQ.get(w.slice(0, -suf.length)) + 3000;
+  return 0;
+}
+function fixLig(s) {
+  if (!s.includes('\0')) return s;
+  return s.replace(/[\p{L}\u0000'’-]*\u0000[\p{L}\u0000'’-]*/gu, tok => {
+    const parts = tok.split('\0'), k = parts.length - 1;
+    if (k > 2) return parts.join('fi');
+    let best = null, bestR = 0; const cands = [];
+    const walk = (i, acc) => {
+      if (i === k) { cands.push(acc + parts[k]); const r = wordRank(acc + parts[k]); if (r && (!bestR || r < bestR)) { bestR = r; best = acc + parts[k]; } return; }
+      for (const l of LIGS) walk(i + 1, acc + parts[i] + l);
+    };
+    walk(0, '');
+    if (best != null) return best;
+    let bs = -Infinity; for (const c of cands) { const sc = lmScore(c.replace(/^['’-]+|['’-]+$/g, '')) - 4 * (c.match(/ff[il]/gi) || []).length; if (sc > bs) { bs = sc; best = c; } }
+    return best ?? parts.join('fi');
+  });
+}
 async function extractReflow(pdf, prog) {
+  await loadFreq();
   const pages = [];
   for (let n = 1; n <= pdf.numPages; n++) {
     const pg = await pdf.getPage(n), vp = pg.getViewport({ scale: 1 }), tc = await pg.getTextContent();
@@ -375,7 +417,7 @@ async function extractReflow(pdf, prog) {
     const L = lines.map(l => {
       l.its.sort((a, b) => a.x - b.x); let s = '', px = null, h = 0;
       for (const it of l.its) { if (px != null && it.x - px > .12 * it.h && !/\s$/.test(s) && !/^\s/.test(it.s)) s += ' '; s += it.s; px = it.x + it.w; h = Math.max(h, it.h); }
-      return { s: s.replace(/\s+/g, ' ').trim(), y: l.y, h, x0: l.its[0].x, x1: px };
+      return { s: fixLig(s.replace(/\s+/g, ' ').trim()), y: l.y, h, x0: l.its[0].x, x1: px };
     }).filter(l => l.s);
     const figs = await pageFigures(pg, vp, L.reduce((t, l) => t + l.s.split(' ').length, 0)).catch(() => []);
     const keep = L.filter(l => { const cy = vp.height - l.y; return !figs.some(f => l.x0 >= f.x0 - 2 && l.x0 <= f.x1 && cy >= f.y0 - 2 && cy <= f.y1 + 2); });
@@ -637,15 +679,15 @@ async function openBook(id) {
   try {
     const blob = await DB.file(id);
     if (!b.cv) { const L = $('#loading'); L.textContent = 'Counting text…'; await ensureUnits(b, blob, p => L.textContent = `Counting text… ${Math.round(p * 100)}%`); await DB.save(b); }
-    if (b.type === 'pdf' && b.reflowV !== 2 && !b.reflowTried2) {
-      b.reflowTried2 = true; const L = $('#loading');
+    if (b.type === 'pdf' && b.reflowV !== 3 && !b.reflowTried3) {
+      b.reflowTried3 = true; const L = $('#loading');
       L.textContent = 'Preparing text…';
       try {
         const pdf = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
         const res = await extractReflow(pdf, p => L.textContent = `Preparing text… ${Math.round(p * 100)}%`); pdf.destroy();
         if (res) {
           const f = (b.mode === 'text' && b.total) ? b.pos / b.total : null;
-          await DB.putFile(b.id + ':reflow', res); b.reflow = res; b.rtotal = res.total; b.hasReflow = true; b.reflowV = 2;
+          await DB.putFile(b.id + ':reflow', res); b.reflow = res; b.rtotal = res.total; b.hasReflow = true; b.reflowV = 3;
           if (f != null) { b.total = res.total; b.pos = f * b.total; } else setMode(b, 'text');
         }
       } catch (e) { console.warn('reflow', e); }
