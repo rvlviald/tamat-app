@@ -177,3 +177,18 @@ body { -webkit-touch-callout: none; overscroll-behavior: none; position: relativ
 .ov .stat { font-size: .92rem; color: var(--ink2); margin: 4px 0; }
 .ov .btn { min-height: 44px; }
 .ov .btn[disabled] { opacity: .5; }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
+.chip.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.step { display: flex; gap: 18px; align-items: center; margin: 22px 0; }
+.step .fig { flex: none; width: min(46%, 220px); }
+.step .fig svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); }
+.step .st { display: flex; flex-direction: column; gap: 4px; font-size: .95rem; color: var(--ink2); line-height: 1.4; }
+.step .st b { color: var(--ink); font-size: 1.05rem; font-weight: 600; }
+.love { position: fixed; left: 50%; bottom: calc(var(--safe-b) + 90px); transform: translate(-50%, 30px); opacity: 0; z-index: 30; display: flex; gap: 14px; align-items: center; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 22px; padding: 12px 18px 12px 12px; box-shadow: 0 10px 40px rgba(0,0,0,.3); transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .3s; max-width: 90vw; }
+.love.in { transform: translate(-50%, 0); opacity: 1; }
+.love img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.love-t { display: flex; flex-direction: column; } .love-t b { font-size: 1.05rem; } .love-t span { color: var(--accent); font-weight: 600; }
+.done-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: -6px auto 12px; display: block; box-shadow: 0 4px 18px rgba(0,0,0,.3); }
+.love-line { margin: 12px 0 0 !important; color: var(--accent); font-weight: 600; opacity: 1 !important; }
+.love { width: max-content; } .love-t { white-space: nowrap; }

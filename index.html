@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
@@ -19,14 +19,14 @@
 <main id="library">
   <div class="wrap">
     <header class="lib-head">
-      <h1>Bacaan</h1>
+      <h1>Reading</h1>
       <p id="today" class="quiet"></p>
     </header>
     <nav class="lib-actions" id="lib-actions">
-      <button id="go-backup" class="chip">Cadangan</button>
+      <button id="go-backup" class="chip">Backup</button>
     </nav>
     <div id="lib-body"></div>
-    <div class="lib-foot"><button id="add" class="link">Tambah buku</button></div>
+    <div class="lib-foot"><button id="add" class="link">Add books</button></div>
   </div>
 </main>
 
@@ -36,23 +36,23 @@
     <div id="epub"><div id="flow"></div></div>
   </div>
   <header id="top" class="glass">
-    <button id="back" aria-label="Kembali ke bacaan">‹ Bacaan</button>
+    <button id="back" aria-label="Back to library">‹ Library</button>
     <span id="rtitle"></span>
     <button id="mode" hidden></button>
-    <button id="theme" aria-label="Ganti tema">Aa</button>
+    <button id="theme" aria-label="Change theme">Aa</button>
   </header>
   <footer id="bottom" class="glass">
-    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Posisi baca">
+    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Reading position">
     <div class="row"><span id="where"></span><b id="left"></b></div>
   </footer>
   <div id="pill"></div>
-  <div id="loading">Membuka…</div>
+  <div id="loading">Opening…</div>
   <div id="done" hidden>
     <div class="sheet glass">
       <h2>Tamat.</h2>
       <p id="done-text"></p>
-      <button id="done-back" class="primary">Kembali ke bacaan</button>
-      <button id="done-close" class="link">Tutup</button>
+      <button id="done-back" class="primary">Back to library</button>
+      <button id="done-close" class="link">Close</button>
     </div>
   </div>
 </section>

@@ -1,7 +1,7 @@
 {
   "name": "Tamat",
   "short_name": "Tamat",
-  "description": "Pembaca PDF dan EPUB yang membantu kamu menamatkan bacaan.",
+  "description": "A PDF and EPUB reader that helps you actually finish your books.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

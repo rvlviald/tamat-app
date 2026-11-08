@@ -60,10 +60,10 @@ const rateOf = b => b.rate || defRate(kind(b), b);
 const remaining = b => Math.max(0, b.total - b.pos) * rateOf(b);
 function fmt(sec) {
   const m = Math.round(sec / 60);
-  if (m < 1) return '< 1 mnt';
-  if (m < 60) return m + ' mnt';
+  if (m < 1) return '< 1 min';
+  if (m < 60) return m + ' min';
   const h = Math.floor(m / 60), r = m % 60;
-  return r ? `${h} j ${r} mnt` : `${h} j`;
+  return r ? `${h} h ${r} min` : `${h} h`;
 }
 
 /* ---------------- helpers ---------------- */
@@ -181,12 +181,12 @@ async function refreshLibrary() {
 function renderLibrary() {
   const root = $('#lib-body'); root.replaceChildren();
   const today = stats[dayKey()] || 0, st = streak();
-  $('#today').textContent = [today > 30 ? `Hari ini ${fmt(today)}` : '', st >= 2 ? `${st} hari beruntun` : ''].filter(Boolean).join(' · ') || (books.length ? 'Lanjutkan di tempat kamu berhenti.' : '');
+  $('#today').textContent = [today > 30 ? `Today ${fmt(today)}` : '', st >= 2 ? `${st}-day streak` : ''].filter(Boolean).join(' · ') || (books.length ? 'Pick up where you left off.' : '');
 
   if (!books.length) {
     const e = h('div', 'empty');
-    e.append(h('h2', '', 'Belum ada bacaan'), h('p', '', 'Tambah PDF atau EPUB. Sisanya biar Tamat yang urus.'));
-    const b = h('button', 'primary', 'Tambah buku'); b.onclick = () => $('#file').click();
+    e.append(h('h2', '', 'Nothing to read yet'), h('p', '', 'Add a PDF or EPUB. Tamat handles the rest.'));
+    const b = h('button', 'primary', 'Add books'); b.onclick = () => $('#file').click();
     e.append(b); root.append(e); $('.lib-foot').hidden = true; return;
   }
   $('.lib-foot').hidden = false;
@@ -199,25 +199,25 @@ function renderLibrary() {
     const hero = h('button', 'hero');
     const rem = remaining(cur), pct = pctOf(cur.pos, cur.total, cur.done);
     const top = h('div', 'hero-top'), txt = h('div', 'hero-txt');
-    txt.append(h('div', 'eyebrow', cur.lastRead ? 'Lanjutkan' : 'Mulai'), h('h2', '', cur.title));
+    txt.append(h('div', 'eyebrow', cur.lastRead ? 'Continue' : 'Start'), h('h2', '', cur.title));
     if (cur.author) txt.append(h('p', 'author', cur.author));
     top.append(coverEl(cur, 'cover-lg'), txt); hero.append(top);
-    const big = h('div', 'big'); big.append(document.createTextNode(fmt(rem)), h('small', '', ' lagi untuk tamat')); hero.append(big);
+    const big = h('div', 'big'); big.append(document.createTextNode(fmt(rem)), h('small', '', ' left to finish')); hero.append(big);
     const bar = h('div', 'bar'); const fill = h('i'); bar.append(fill); hero.append(bar);
     requestAnimationFrame(() => fill.style.width = pct + '%');
-    hero.append(h('div', 'meta', `${pct}% selesai`), h('span', 'go', cur.lastRead ? 'Lanjut baca' : 'Mulai baca'));
+    hero.append(h('div', 'meta', `${pct}% done`), h('span', 'go', cur.lastRead ? 'Keep reading' : 'Start reading'));
     hero.onclick = () => openBook(cur.id);
     root.append(hero);
   }
 
   const rest = active.slice(1).sort((a, b) => remaining(a) - remaining(b)); // paling dekat selesai di atas
   if (rest.length) {
-    root.append(h('p', 'section-label', 'Berikutnya'));
+    root.append(h('p', 'section-label', 'Up next'));
     (showAll ? rest : rest.slice(0, 3)).forEach(b => root.append(item(b)));
-    if (rest.length > 3 && !showAll) { const x = h('button', 'expand', `${rest.length - 3} lainnya`); x.onclick = () => { showAll = true; renderLibrary(); }; root.append(x); }
+    if (rest.length > 3 && !showAll) { const x = h('button', 'expand', `${rest.length - 3} more`); x.onclick = () => { showAll = true; renderLibrary(); }; root.append(x); }
   }
   if (done.length) {
-    const x = h('button', 'expand', `${showDoneList ? 'Sembunyikan' : 'Selesai'} · ${done.length}`);
+    const x = h('button', 'expand', `${showDoneList ? 'Hide' : 'Finished'} · ${done.length}`);
     x.style.marginTop = '20px'; x.onclick = () => { showDoneList = !showDoneList; renderLibrary(); }; root.append(x);
     if (showDoneList) done.forEach(b => root.append(item(b, true)));
   }
@@ -228,12 +228,12 @@ function item(b, isDone) {
   const it = h('button', 'item');
   const tx = h('div', 'item-txt');
   tx.append(h('div', 't', b.title));
-  tx.append(h('div', 's', isDone ? 'Tamat' : `${fmt(remaining(b))} lagi · ${pctOf(b.pos, b.total, b.done)}%`));
+  tx.append(h('div', 's', isDone ? 'Finished' : `${fmt(remaining(b))} left · ${pctOf(b.pos, b.total, b.done)}%`));
   if (!isDone) { const bar = h('div', 'bar'); const f = h('i'); f.style.width = pctOf(b.pos, b.total, b.done) + '%'; bar.append(f); tx.append(bar); }
   it.append(coverEl(b, 'cover-sm'), tx);
   it.onclick = () => openBook(b.id);
-  const more = h('button', 'more', '⋯'); more.setAttribute('aria-label', 'Menu buku');
-  more.onclick = async e => { e.stopPropagation(); if (window.bookMenu) return bookMenu(b); if (confirm(`Hapus "${b.title}" dari Tamat?`)) { await DB.del(b.id); refreshLibrary(); } };
+  const more = h('button', 'more', '⋯'); more.setAttribute('aria-label', 'Book menu');
+  more.onclick = async e => { e.stopPropagation(); if (window.bookMenu) return bookMenu(b); if (confirm(`Remove "${b.title}" from Tamat?`)) { await DB.del(b.id); refreshLibrary(); } };
   w.append(it, more); return w;
 }
 
@@ -241,7 +241,7 @@ async function addFiles(files) {
   let n = 0;
   for (const f of files) {
     try {
-      toast(`Menambahkan ${f.name}…`);
+      toast(`Adding ${f.name}…`);
       const isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
       let meta;
       if (isPdf) {
@@ -253,9 +253,9 @@ async function addFiles(files) {
       } else meta = await parseEpub(f);
       const book = { id: crypto.randomUUID(), ...meta, addedAt: Date.now(), lastRead: 0, rate: null, samples: [], spent: 0, done: false, ms: 0 };
       await DB.add(book, f); n++;
-    } catch (e) { console.error(e); toast(`Gagal membuka ${f.name}`); }
+    } catch (e) { console.error(e); toast(`Couldn't open ${f.name}`); }
   }
-  if (n) { toast(n === 1 ? 'Buku ditambahkan' : `${n} buku ditambahkan`); await refreshLibrary(); }
+  if (n) { toast(n === 1 ? 'Book added' : `${n} books added`); await refreshLibrary(); }
 }
 $('#add').onclick = () => $('#file').click();
 $('#file').onchange = e => { const fs = [...e.target.files]; e.target.value = ''; if (fs.length) addFiles(fs); };
@@ -447,7 +447,7 @@ class PdfReader {
   pageAt(w) { let p = 1; while (p < this.total && this.wc[p] < w - .5) p++; return p; } // halaman yang berakhir di/setelah posisi karakter w
   get pos() { return this.wc[this.page]; }
   get unit() { return this.wc[this.page] - this.wc[this.page - 1]; }
-  where() { return `Hal ${this.page} dari ${this.total} · ${pctOf(this.pos, this.size, this.atEnd())}%`; }
+  where() { return `Page ${this.page} of ${this.total} · ${pctOf(this.pos, this.size, this.atEnd())}%`; }
   atEnd() { return this.page >= this.total; }
   canStep(d) { return d > 0 ? this.page < this.total : this.page > 1; }
   async step(d) { await this.load(this.page + d); }
@@ -535,7 +535,7 @@ class EpubReader {
   get pos() { return this.anchor ?? this.starts[this.ci] + this.thru(this.pg); }
   get unit() { return this.thru(this.pg) - (this.pg ? this.thru(this.pg - 1) : 0); }
   where() {
-    const c = this.chaps[this.ci], t = c.title && c.title.length < 40 ? c.title : `Bagian ${this.ci + 1}`;
+    const c = this.chaps[this.ci], t = c.title && c.title.length < 40 ? c.title : `Part ${this.ci + 1}`;
     return `${t} · ${pctOf(this.pos, this.total, this.atEnd())}%`;
   }
   atEnd() { return this.ci === this.chaps.length - 1 && this.pg === this.pages - 1; }
@@ -636,34 +636,34 @@ async function openBook(id) {
   S = { book: b, t: null, saveT: 0, flipping: false, doneShown: false };
   try {
     const blob = await DB.file(id);
-    if (!b.cv) { const L = $('#loading'); L.textContent = 'Menghitung teks…'; await ensureUnits(b, blob, p => L.textContent = `Menghitung teks… ${Math.round(p * 100)}%`); await DB.save(b); }
+    if (!b.cv) { const L = $('#loading'); L.textContent = 'Counting text…'; await ensureUnits(b, blob, p => L.textContent = `Counting text… ${Math.round(p * 100)}%`); await DB.save(b); }
     if (b.type === 'pdf' && b.reflowV !== 2 && !b.reflowTried2) {
       b.reflowTried2 = true; const L = $('#loading');
-      L.textContent = 'Menyiapkan teks…';
+      L.textContent = 'Preparing text…';
       try {
         const pdf = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
-        const res = await extractReflow(pdf, p => L.textContent = `Menyiapkan teks… ${Math.round(p * 100)}%`); pdf.destroy();
+        const res = await extractReflow(pdf, p => L.textContent = `Preparing text… ${Math.round(p * 100)}%`); pdf.destroy();
         if (res) {
           const f = (b.mode === 'text' && b.total) ? b.pos / b.total : null;
           await DB.putFile(b.id + ':reflow', res); b.reflow = res; b.rtotal = res.total; b.hasReflow = true; b.reflowV = 2;
           if (f != null) { b.total = res.total; b.pos = f * b.total; } else setMode(b, 'text');
         }
       } catch (e) { console.warn('reflow', e); }
-      L.textContent = 'Membuka…'; await DB.save(b);
+      L.textContent = 'Opening…'; await DB.save(b);
     }
     await mount(b, blob);
     applyTheme(); ui(); S.t = performance.now();
     reader$.classList.remove('loading');
     setChrome(false);
     navigator.wakeLock?.request('screen').then(l => S.wake = l).catch(() => {});
-  } catch (e) { console.error(e); toast('Gagal membuka buku'); history.back(); }
+  } catch (e) { console.error(e); toast("Couldn't open this book"); history.back(); }
 }
 async function mount(b, blob) {
   if (b.hasReflow && !b.reflow) b.reflow = await DB.file(b.id + ':reflow');
   reader = (b.type === 'pdf' && b.mode !== 'text') ? new PdfReader() : new EpubReader();
   R.sx = 0; await reader.open(b, blob); reader.apply?.();
   $('#rtitle').textContent = b.title;
-  const mb = $('#mode'); mb.hidden = !(b.type === 'pdf' && b.hasReflow); mb.textContent = b.mode === 'text' ? 'Halaman asli' : 'Teks';
+  const mb = $('#mode'); mb.hidden = !(b.type === 'pdf' && b.hasReflow); mb.textContent = b.mode === 'text' ? 'Original pages' : 'Text';
 }
 $('#mode').onclick = async () => {
   const b = S.book; if (!reader || !b.hasReflow) return;
@@ -690,7 +690,7 @@ function applyTheme() {
   reader$.dataset.theme = t;
   document.querySelector('meta[name=theme-color]').content = getComputedStyle(reader$).getPropertyValue('--page') || '#f7f3ea';
 }
-$('#theme').onclick = () => { const t = ls.get('theme', 'auto'); ls.set('theme', THEMES[(THEMES.indexOf(t) + 1) % THEMES.length]); applyTheme(); toast({ auto: 'Tema otomatis', paper: 'Kertas', sepia: 'Sepia', night: 'Malam' }[ls.get('theme', 'auto')]); };
+$('#theme').onclick = () => { const t = ls.get('theme', 'auto'); ls.set('theme', THEMES[(THEMES.indexOf(t) + 1) % THEMES.length]); applyTheme(); toast({ auto: 'Auto theme', paper: 'Paper', sepia: 'Sepia', night: 'Night' }[ls.get('theme', 'auto')]); };
 
 /* progress bookkeeping */
 function moved(prev, user) {
@@ -709,21 +709,21 @@ function moved(prev, user) {
     }
   }
   S.t = now;
-  const before = prev / b.total; b.pos = pos; b.lastRead = Date.now();
+  const before = prev / b.total; b.pos = pos; b.lastRead = Date.now(); window.onProgress?.(b);
   if (reader.atEnd() && !b.done) { b.done = true; b.doneAt = Date.now(); showDone(); }
   ui(); scheduleSave();
 }
 function ui() {
   const b = S.book, rem = remaining(b), end = reader.atEnd();
   const near = !end && rem <= 900;
-  const txt = end ? 'Tamat' : rem <= 300 ? `Tinggal ${fmt(rem)} — tuntaskan` : rem <= 900 ? `Kurang dari ${fmt(Math.ceil(rem / 300) * 300)} lagi` : `${fmt(rem)} lagi`;
+  const txt = end ? 'Finished' : rem <= 300 ? `Only ${fmt(rem)} left — finish it` : rem <= 900 ? `Under ${fmt(Math.ceil(rem / 300) * 300)} left` : `${fmt(rem)} left`;
   $('#left').textContent = txt; $('#left').classList.toggle('near', near);
   $('#where').textContent = reader.where();
   $('#scrub').value = Math.round(b.pos / b.total * 1000);
   $('#pill').textContent = txt; $('#pill').classList.toggle('near', near);
 }
 function showDone() {
-  const b = S.book; $('#done-text').textContent = `${b.title} — ${fmt(b.spent || 0)} waktu baca.`; $('#done').hidden = false;
+  const b = S.book; $('#done-text').textContent = `${b.title} — ${fmt(b.spent || 0)} of reading time.`; $('#done').hidden = false;
 }
 $('#done-back').onclick = () => history.back();
 $('#done-close').onclick = () => $('#done').hidden = true;
@@ -733,7 +733,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { flu
 
 /* scrubber */
 const scrub = $('#scrub');
-scrub.addEventListener('input', () => { if (!reader) return; const f = scrub.value / 1000; $('#left').textContent = fmt((1 - f) * S.book.total * rateOf(S.book)) + ' lagi'; });
+scrub.addEventListener('input', () => { if (!reader) return; const f = scrub.value / 1000; $('#left').textContent = fmt((1 - f) * S.book.total * rateOf(S.book)) + ' left'; });
 scrub.addEventListener('change', async () => { if (!reader) return; const prev = reader.pos; R.sx = 0; await reader.jump(scrub.value / 1000); reader.apply?.(); moved(prev, false); });
 ['pointerdown', 'touchstart'].forEach(ev => scrub.addEventListener(ev, e => e.stopPropagation()));
 
