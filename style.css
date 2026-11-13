@@ -68,7 +68,7 @@ button:active { opacity: .55; transform: scale(.97); transition: transform 90ms 
 #page { position: absolute; left: 0; top: 0; transform-origin: 0 0; display: none; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.05); will-change: transform; }
 #reader[data-theme=sepia] #page { filter: sepia(.4) brightness(.96); }
 #reader[data-theme=night] #page { filter: invert(.9) hue-rotate(180deg) brightness(.95); box-shadow: none; }
-#epub { position: absolute; overflow: hidden; display: none; color: var(--page-ink); font-family: var(--font); will-change: transform; }
+#epub { position: absolute; overflow: hidden; display: none; color: var(--page-ink); font-family: var(--font); will-change: transform; transition: transform .26s cubic-bezier(.2,.8,.2,1); }
 #flow { height: 100%; column-gap: 0; column-fill: auto; font-size: var(--fs, 20px); line-height: 1.58; hyphens: auto; -webkit-hyphens: auto; text-align: justify; font-optical-sizing: auto; will-change: transform; word-break: break-word; }
 #flow p { margin: 0; text-indent: 1.4em; orphans: 2; widows: 2; }
 #flow h1, #flow h2, #flow h3, #flow h4 { font-weight: 650; line-height: 1.18; letter-spacing: -.015em; text-align: left; margin: 0 0 .8em; text-indent: 0; break-after: avoid; hyphens: manual; }
@@ -159,7 +159,6 @@ button:active { opacity: .55; transform: scale(.97); transition: transform 90ms 
 .ov .btn { border: 1px solid var(--line); border-radius: 999px; padding: 10px 18px; background: var(--card); margin: 8px 8px 0 0; }
 .ov .btn.pri { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
 .ov .btn.dng { color: #c0392b; }
-#epub { transition: translate .28s cubic-bezier(.2,.8,.2,1); }
 
 /* ================= PWA (iPhone + iPad) ================= */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -191,4 +190,7 @@ body { -webkit-touch-callout: none; overscroll-behavior: none; position: relativ
 .love-t { display: flex; flex-direction: column; } .love-t b { font-size: 1.05rem; } .love-t span { color: var(--accent); font-weight: 600; }
 .done-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: -6px auto 12px; display: block; box-shadow: 0 4px 18px rgba(0,0,0,.3); }
 .love-line { margin: 12px 0 0 !important; color: var(--accent); font-weight: 600; opacity: 1 !important; }
+#flow figure img { border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.08); max-height: 68vh; width: auto; }
+#undo-btn { font-size: 1.15rem; padding: 0 10px; border-radius: 999px; background: rgba(180,80,26,.12); color: var(--accent); height: 34px; display: inline-flex; align-items: center; justify-content: center; }
+#undo-btn[hidden] { display: none; }
 .love { width: max-content; } .love-t { white-space: nowrap; }

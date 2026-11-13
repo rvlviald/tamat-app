@@ -23,10 +23,10 @@
       <p id="today" class="quiet"></p>
     </header>
     <nav class="lib-actions" id="lib-actions">
-      <button id="go-backup" class="chip">Backup</button>
+      <button type="button" id="go-backup" class="chip">Backup</button>
     </nav>
     <div id="lib-body"></div>
-    <div class="lib-foot"><button id="add" class="link">Add books</button></div>
+    <div class="lib-foot"><button type="button" id="add" class="link">Add books</button></div>
   </div>
 </main>
 
@@ -36,10 +36,11 @@
     <div id="epub"><div id="flow"></div></div>
   </div>
   <header id="top" class="glass">
-    <button id="back" aria-label="Back to library">‹ Library</button>
+    <button type="button" id="back" aria-label="Back to library">‹ Library</button>
+    <button type="button" id="undo-btn" aria-label="Undo last step (Ctrl+Z)" title="Back to previous position (Ctrl+Z)" hidden>↶</button>
     <span id="rtitle"></span>
-    <button id="mode" hidden></button>
-    <button id="theme" aria-label="Change theme">Aa</button>
+    <button type="button" id="mode" hidden></button>
+    <button type="button" id="theme" aria-label="Change theme">Aa</button>
   </header>
   <footer id="bottom" class="glass">
     <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Reading position">
@@ -51,8 +52,8 @@
     <div class="sheet glass">
       <h2>Tamat.</h2>
       <p id="done-text"></p>
-      <button id="done-back" class="primary">Back to library</button>
-      <button id="done-close" class="link">Close</button>
+      <button type="button" id="done-back" class="primary">Back to library</button>
+      <button type="button" id="done-close" class="link">Close</button>
     </div>
   </div>
 </section>
